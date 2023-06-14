@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
+import { TValueTypes } from "../types/types";
 
-export function useDebounce<T>(value: T, delay: number = 400): T {
-    const [debouncedValue, setDebouncedValue] = useState<T>(value)
+export function useDebounce(value: TValueTypes, delay = 400): TValueTypes {
+  const [debouncedValue, setDebouncedValue] = useState<TValueTypes>(value);
 
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedValue(value), delay || 500)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
 
-        return () => {
-            clearTimeout(timer)
-        }
-    }, [value, delay])
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
 
-    return debouncedValue
+  return debouncedValue;
 }

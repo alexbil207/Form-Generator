@@ -1,33 +1,36 @@
-import { useState, useEffect } from 'react'
-import { useDebounce } from './useDebounce'
+import { useState, useEffect, useContext } from "react";
+import { useDebounce } from "./useDebounce";
+import { TValueTypes } from "../types/types";
+import { FormContext } from "../context/form.context";
 
-type ValueTypes = string | number | undefined
-type TuseForm = () => boolean
-
-export const useForm = (validator: TuseForm) => {
-    const [value, setValue] = useState<ValueTypes>()
-    const [isError, setError] = useState<boolean>()
-    const debouncedValue = useDebounce<ValueTypes>(value, 500)
-
-    useEffect(() => {
-        setError(validator())
-    }, [debouncedValue])
-
-
-    return [
-        isError,
-        value,
-        function (ev: React.ChangeEvent<HTMLInputElement>) {
-            let value = ev.target.name;
-            switch (ev.target.type) {
-                case 'number':
-                    value = +ev.target.value;
-                    break;
-                default:
-                    value = ev.target.value;
-            }
-            setValue(value);
-        },
-        setValue
-    ]
+type TuseForm = (val: TValueTypes) => boolean;
+interface IUseForm {
+  isError: boolean;
+  value: TValueTypes;
+  handleChange: (
+    ev: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => void;
 }
+
+export const useForm = (name: string, validator: TuseForm): IUseForm => {
+  const [value, setValue] = useState<TValueTypes>("");
+  const [isError, setError] = useState<boolean>(false);
+  const { setFormData } = useContext(FormContext);
+  const debouncedValue = useDebounce(value, 500);
+
+  useEffect(() => {
+    if (!debouncedValue) return;
+    setError(!validator(debouncedValue));
+    setFormData((prev) => ({ ...prev, [name]: debouncedValue }));
+  }, [debouncedValue, validator, name, setFormData]);
+
+  return {
+    isError,
+    value,
+    handleChange: (
+      ev: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+      setValue(ev.target.value);
+    },
+  };
+};
